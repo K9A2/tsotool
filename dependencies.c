@@ -108,33 +108,8 @@ struct off_flag_def
     u32 min_kernel_ver;
 };
 static const struct off_flag_def off_flag_def[] = {
-    {"rx", "rx-checksumming", "rx-checksum",
-     ETHTOOL_GRXCSUM, ETHTOOL_SRXCSUM, ETH_FLAG_RXCSUM, 0},
-    {"tx", "tx-checksumming", "tx-checksum-*",
-     ETHTOOL_GTXCSUM, ETHTOOL_STXCSUM, ETH_FLAG_TXCSUM, 0},
-    {"sg", "scatter-gather", "tx-scatter-gather*",
-     ETHTOOL_GSG, ETHTOOL_SSG, ETH_FLAG_SG, 0},
     {"tso", "tcp-segmentation-offload", "tx-tcp*-segmentation",
      ETHTOOL_GTSO, ETHTOOL_STSO, ETH_FLAG_TSO, 0},
-    {"ufo", "udp-fragmentation-offload", "tx-udp-fragmentation",
-     ETHTOOL_GUFO, ETHTOOL_SUFO, ETH_FLAG_UFO, 0},
-    {"gso", "generic-segmentation-offload", "tx-generic-segmentation",
-     ETHTOOL_GGSO, ETHTOOL_SGSO, ETH_FLAG_GSO, 0},
-    {"gro", "generic-receive-offload", "rx-gro",
-     ETHTOOL_GGRO, ETHTOOL_SGRO, ETH_FLAG_GRO, 0},
-    {"lro", "large-receive-offload", "rx-lro",
-     0, 0, ETH_FLAG_LRO,
-     KERNEL_VERSION(2, 6, 24)},
-    {"rxvlan", "rx-vlan-offload", "rx-vlan-hw-parse",
-     0, 0, ETH_FLAG_RXVLAN,
-     KERNEL_VERSION(2, 6, 37)},
-    {"txvlan", "tx-vlan-offload", "tx-vlan-hw-insert",
-     0, 0, ETH_FLAG_TXVLAN,
-     KERNEL_VERSION(2, 6, 37)},
-    {"ntuple", "ntuple-filters", "rx-ntuple-filter",
-     0, 0, ETH_FLAG_NTUPLE, 0},
-    {"rxhash", "receive-hashing", "rx-hashing",
-     0, 0, ETH_FLAG_RXHASH, 0},
 };
 
 struct feature_def
@@ -711,61 +686,51 @@ static void dump_features(const struct feature_defs *defs,
     int kernel_ver = linux_version_code();
     u32 value;
     int indent;
-    int i, j;
+    int i = 0, j = 0;
 
-    for (i = 0; i < ARRAY_SIZE(off_flag_def); i++)
+    value = off_flag_def[i].value;
+
+    /* If this offload flag matches exactly one generic
+        * feature then it's redundant to show the flag and
+        * feature states separately.  Otherwise, show the
+        * flag state first.
+        */
+        /*
+    if (defs->off_flag_matched[i] != 1 &&
+        (!ref_state ||
+            (state->off_flags ^ ref_state->off_flags) & value))
     {
-        /* Don't show features whose state is unknown on this
-		 * kernel version
-		 */
-        if (defs->off_flag_matched[i] == 0 &&
-            off_flag_def[i].get_cmd == 0 &&
-            kernel_ver < off_flag_def[i].min_kernel_ver)
+        printf("%s: %s\n", off_flag_def[i].long_name, (state->off_flags & value) ? "on" : "off");
+        indent = 1;
+    }
+    else
+    {
+        indent = 0;
+    }
+
+    /* Show matching features */
+    /*
+    for (j = 0; j < defs->n_features; j++)
+    {
+        if (defs->def[j].off_flag_index != i)
             continue;
-
-        value = off_flag_def[i].value;
-
-        /* If this offload flag matches exactly one generic
-		 * feature then it's redundant to show the flag and
-		 * feature states separately.  Otherwise, show the
-		 * flag state first.
-		 */
-        if (defs->off_flag_matched[i] != 1 &&
-            (!ref_state ||
-             (state->off_flags ^ ref_state->off_flags) & value))
+        if (defs->off_flag_matched[i] != 1)
         {
-            printf("%s: %s\n",
-                   off_flag_def[i].long_name,
-                   (state->off_flags & value) ? "on" : "off");
-            indent = 1;
+            /* Show all matching feature states */
+            /*
+            dump_one_feature(indent ? "\t" : "", defs->def[j].name, state, ref_state, j);
         }
         else
         {
-            indent = 0;
-        }
-
-        /* Show matching features */
-        for (j = 0; j < defs->n_features; j++)
-        {
-            if (defs->def[j].off_flag_index != i)
-                continue;
-            if (defs->off_flag_matched[i] != 1)
-                /* Show all matching feature states */
-                dump_one_feature(indent ? "\t" : "",
-                                 defs->def[j].name,
-                                 state, ref_state, j);
-            else
-                /* Show full state with the old flag name */
-                dump_one_feature("", off_flag_def[i].long_name,
-                                 state, ref_state, j);
+            /* Show full state with the old flag name */
+            /*
+            dump_one_feature("", off_flag_def[i].long_name, state, ref_state, j);
         }
     }
+    */
 
-    /* Show all unmatched features that have non-null names */
-    for (j = 0; j < defs->n_features; j++)
-        if (defs->def[j].off_flag_index < 0 && defs->def[j].name[0])
-            dump_one_feature("", defs->def[j].name,
-                             state, ref_state, j);
+    dump_one_feature("", off_flag_def[i].long_name, state, ref_state, j);
+
 }
 
 static struct ethtool_gstrings *

@@ -2,9 +2,11 @@
 
 #include <stdbool.h>
 
-/* Detemine whether the status of tso is changable */
+/* Detemine whether the status of tso is changable, false for "fixed" */
 static bool IsChangable(char *deviceName)
 {
+    
+    
 
 }
 
