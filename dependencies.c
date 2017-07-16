@@ -690,26 +690,7 @@ static void dump_features(const struct feature_defs *defs,
 
     value = off_flag_def[i].value;
 
-    /* If this offload flag matches exactly one generic
-        * feature then it's redundant to show the flag and
-        * feature states separately.  Otherwise, show the
-        * flag state first.
-        */
-        /*
-    if (defs->off_flag_matched[i] != 1 &&
-        (!ref_state ||
-            (state->off_flags ^ ref_state->off_flags) & value))
-    {
-        printf("%s: %s\n", off_flag_def[i].long_name, (state->off_flags & value) ? "on" : "off");
-        indent = 1;
-    }
-    else
-    {
-        indent = 0;
-    }
-
     /* Show matching features */
-    /*
     for (j = 0; j < defs->n_features; j++)
     {
         if (defs->def[j].off_flag_index != i)
@@ -717,19 +698,16 @@ static void dump_features(const struct feature_defs *defs,
         if (defs->off_flag_matched[i] != 1)
         {
             /* Show all matching feature states */
-            /*
+
+            //TODO: Simplify it
             dump_one_feature(indent ? "\t" : "", defs->def[j].name, state, ref_state, j);
         }
         else
         {
             /* Show full state with the old flag name */
-            /*
             dump_one_feature("", off_flag_def[i].long_name, state, ref_state, j);
         }
     }
-    */
-
-    dump_one_feature("", off_flag_def[i].long_name, state, ref_state, j);
 
 }
 
